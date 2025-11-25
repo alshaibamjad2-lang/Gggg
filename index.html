@@ -1,100 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>القائمة - Supabase</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cairo:wght@300;400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<!-- تحميل مكتبة Supabase (ضروري جدًا) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-// ---------- إعداد Supabase ----------
-const SUPABASE_URL = "https://ztwbgqkxmdhpzqhnefty.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0d2JncWt4bWRocHpxaG5lZnR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMTQwMDEsImV4cCI6MjA3OTU5MDAwMX0.6W_V9v5VxQpPfv65Ygc51-m7G1Z8sl8fx1B8bWyA6Xg";
+</head>
+<body>
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<header>قائمة الطعام</header>
 
-// --- تحميل الأقسام + المنتجات ---
-async function loadMenu() {
+<div class="section-slider" id="sections"></div>
 
-    const { data: categories, error: catError } = await supabaseClient
-        .from("categories")
-        .select("*")
-        .order("id");
+<div class="controls">
+    <div style="flex:1"></div>
+    <div id="viewName">Grid 2×2</div>
+    <button id="toggleView">تغيير العرض</button>
+</div>
 
-    if (catError) {
-        console.error("خطأ جلب الأقسام:", catError);
-        return;
-    }
+<div id="meals" class="meals mode-grid"></div>
 
-    const { data: products, error: prodError } = await supabaseClient
-        .from("products")
-        .select("*")
-        .order("id");
+<!-- CART -->
+<div class="cart-float" id="openCart">🛒<span id="cartCount">0</span></div>
+<div id="cartOverlay"></div>
 
-    if (prodError) {
-        console.error("خطأ جلب المنتجات:", prodError);
-        return;
-    }
+<div id="cartSidebar">
+  <div class="cart-title">سلة المشتريات</div>
+  <div class="cart-items" id="cartItems"></div>
+  <div style="text-align:center; margin:15px 0; color:var(--gold); font-size:20px;">
+      المجموع: <strong id="cartTotal">0 ر.س</strong>
+  </div>
+  <div class="cart-footer">
+    <button id="clearCart">إفراغ السلة</button>
+  </div>
+</div>
 
-    renderSections(categories);
-    renderProducts(categories, products);
-}
-
-// --- الأقسام ---
-function renderSections(categories) {
-    const secDiv = document.getElementById("sections");
-    secDiv.innerHTML = "";
-
-    secDiv.innerHTML += `
-        <button class="section-btn active" data-section="all">الكل</button>
-    `;
-
-    categories.forEach(cat => {
-        secDiv.innerHTML += `
-            <button class="section-btn" data-section="${cat.id}">${cat.name}</button>
-        `;
-    });
-
-    document.querySelectorAll(".section-btn").forEach(btn => {
-        btn.onclick = () => {
-            document.querySelector(".section-btn.active")?.classList.remove("active");
-            btn.classList.add("active");
-            renderSelected(btn.dataset.section);
-        };
-    });
-}
-
-let globalProducts = [];
-let globalCategories = [];
-
-function renderProducts(categories, products) {
-    globalProducts = products;
-    globalCategories = categories;
-    renderSelected("all");
-}
-
-// --- عرض المنتجات ---
-function renderSelected(section) {
-    const mealsDiv = document.getElementById("meals");
-    mealsDiv.innerHTML = "";
-
-    let shown = section === "all"
-        ? globalProducts
-        : globalProducts.filter(p => p.category_id == section);
-
-    shown.forEach(p => {
-        mealsDiv.innerHTML += `
-            <div class="meal">
-                <div class="img">
-                    <img src="${p.image_url || ""}">
-                </div>
-                <div class="info">
-                    <h3>${p.name}</h3>
-                    <p>${p.description || ""}</p>
-                    <div class="price">${p.price} ر.س</div>
-                    <button class="add-to-cart" data-name="${p.name}" data-price="${p.price}">
-                        إضافة للسلة
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-}
-
-// --- تحميل القائمة بعد فتح الصفحة ---
-document.addEventListener("DOMContentLoaded", loadMenu);
-</script>
+<!-- ملف السكربت الأساسي -->
+<script src="script.js"></script>
+</body>
+</html>
